@@ -1,11 +1,9 @@
 package propensi.tens.bms.features.shift_management.overtime.services;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 
-import jakarta.transaction.Transactional;
 import propensi.tens.bms.features.account_management.models.Outlet;
 import propensi.tens.bms.features.account_management.repositories.OutletDb;
 import propensi.tens.bms.features.shift_management.overtime.dto.request.OvertimeLogApprovalRequest;
