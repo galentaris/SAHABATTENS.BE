@@ -17,6 +17,7 @@ public class BaristaController {
     @Autowired
     private BaristaService baristaService;
 
+    @GetMapping
     public ResponseEntity<List<BaristaDropdownResponseDTO>> getBaristasByOutlet(
         @RequestParam Long outletId,
         @RequestParam(required = false) String status) {
