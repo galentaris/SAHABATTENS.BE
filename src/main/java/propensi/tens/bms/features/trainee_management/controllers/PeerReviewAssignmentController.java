@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import propensi.tens.bms.features.account_management.dto.response.BaseResponseDTO;
 import propensi.tens.bms.features.trainee_management.dto.request.PeerReviewAssignmentRequestDTO;
+import propensi.tens.bms.features.trainee_management.dto.request.UpdatePeerReviewAssignmentRequestDTO;
 import propensi.tens.bms.features.trainee_management.dto.response.PeerReviewAssignmentResponseDTO;
 import propensi.tens.bms.features.trainee_management.services.PeerReviewAssignmentService;
 
@@ -150,6 +151,28 @@ public class PeerReviewAssignmentController {
             response.setTimestamp(new Date());
             response.setData(null);
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // Endpoint untuk update peer review assignments
+    @PutMapping("/update/{revieweeUsername}")
+    public ResponseEntity<?> updatePeerReviewAssignments(
+            @PathVariable("revieweeUsername") String revieweeUsername,
+            @RequestBody UpdatePeerReviewAssignmentRequestDTO request) {
+        BaseResponseDTO<List<PeerReviewAssignmentResponseDTO>> response = new BaseResponseDTO<>();
+        try {
+            List<PeerReviewAssignmentResponseDTO> list = peerReviewAssignmentService.updatePeerReviewAssignments(revieweeUsername, request);
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Peer review assignments untuk reviewee " + revieweeUsername + " berhasil diperbarui");
+            response.setTimestamp(new Date());
+            response.setData(list);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage(e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
 }
