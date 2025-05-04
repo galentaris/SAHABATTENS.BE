@@ -1,9 +1,7 @@
 package propensi.tens.bms.features.shift_management.overtime.services;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import propensi.tens.bms.features.account_management.models.Outlet;
@@ -26,10 +24,10 @@ import java.util.stream.Collectors;
 public class OvertimeLogService {
 
     // @Autowired
-    private final OvertimeLogDb overtimeLogDb;
+    private OvertimeLogDb overtimeLogDb;
     
     // @Autowired
-    private final OutletDb outletDb;
+    private OutletDb outletDb;
 
     public OvertimeLogService(OvertimeLogDb overtimeLogDb, OutletDb outletDb) {
         this.overtimeLogDb = overtimeLogDb;

@@ -19,7 +19,7 @@ import java.util.UUID;
 @RequestMapping("/api/overtime-logs")
 public class OvertimeLogController {
 
-    private final OvertimeLogService overtimeLogService;
+    private OvertimeLogService overtimeLogService;
 
     // Constructor manual sebagai pengganti @RequiredArgsConstructor
     public OvertimeLogController(OvertimeLogService overtimeLogService) {
