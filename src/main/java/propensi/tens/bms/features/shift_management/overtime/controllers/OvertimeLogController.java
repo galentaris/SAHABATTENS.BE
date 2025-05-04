@@ -6,6 +6,7 @@ import propensi.tens.bms.features.shift_management.overtime.dto.request.Overtime
 import propensi.tens.bms.features.shift_management.overtime.dto.response.OvertimeLogResponse;
 import propensi.tens.bms.features.shift_management.overtime.services.OvertimeLogService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +20,8 @@ import java.util.UUID;
 @RequestMapping("/api/overtime-logs")
 public class OvertimeLogController {
 
+    @Autowired
     private OvertimeLogService overtimeLogService;
-
-    // Constructor manual sebagai pengganti @RequiredArgsConstructor
-    public OvertimeLogController(OvertimeLogService overtimeLogService) {
-        this.overtimeLogService = overtimeLogService;
-    }
 
     @GetMapping
     public ResponseEntity<List<OvertimeLogResponse>> getAllOvertimeLogs(

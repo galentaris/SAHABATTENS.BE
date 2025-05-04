@@ -18,21 +18,18 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+
 
 @Slf4j
 @Service
 public class OvertimeLogService {
 
-    // @Autowired
+    @Autowired
     private OvertimeLogDb overtimeLogDb;
     
-    // @Autowired
+    @Autowired
     private OutletDb outletDb;
-
-    public OvertimeLogService(OvertimeLogDb overtimeLogDb, OutletDb outletDb) {
-        this.overtimeLogDb = overtimeLogDb;
-        this.outletDb     = outletDb;
-    }
 
     // Get All Overtime Logs with date range filtering
     public List<OvertimeLogResponse> getAllOvertimeLogs(String status, String sort, LocalDate startDate, LocalDate endDate) {
