@@ -38,7 +38,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/account/change-password").permitAll()
-                        .requestMatchers("/api/baristas/**").permitAll()
+                        .requestMatchers("/api/baristas/**").permitAll() 
                         .requestMatchers("/api/shift/**").permitAll()
                         .requestMatchers("/api/account/create").hasAnyRole("Admin")
                         .requestMatchers("/api/training-materials/create").hasAnyRole("Admin")
