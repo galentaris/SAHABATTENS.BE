@@ -6,9 +6,13 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import propensi.tens.bms.features.trainee_management.repositories.PeerReviewContentRepository;
 import propensi.tens.bms.features.trainee_management.dto.response.PeerReviewQuestionResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+
 
 @Service @Transactional
 public class PeerReviewContentServiceImpl implements PeerReviewContentService {
+
+    @Autowired
     private PeerReviewContentRepository repo;
 
     @Override

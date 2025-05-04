@@ -8,10 +8,16 @@ import propensi.tens.bms.features.trainee_management.models.*;
 import propensi.tens.bms.features.trainee_management.repositories.*;
 import propensi.tens.bms.features.trainee_management.dto.request.CreatePeerReviewSubmissionRequest;
 import propensi.tens.bms.features.trainee_management.dto.response.PeerReviewSubmissionResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+
 
 @Service @Transactional
 public class PeerReviewSubmissionServiceImpl implements PeerReviewSubmissionService {
+
+    @Autowired
     private PeerReviewSubmissionRepository subRepo;
+
+    @Autowired
     private PeerReviewAssignmentRepository assignRepo; 
 
     @Override

@@ -29,11 +29,8 @@ public class AssessmentAnswerController {
     @Autowired
     private QuestionOptionRepository optionRepository;
 
-    private final AssessmentAnswerService answerService;
     @Autowired
-    public AssessmentAnswerController(AssessmentAnswerService answerService) {
-        this.answerService = answerService;
-    }
+    private AssessmentAnswerService answerService;
     
     @GetMapping("/correct/{assessmentId}")
     public ResponseEntity<?> getCorrectAnswers(@PathVariable("assessmentId") Long assessmentId) {

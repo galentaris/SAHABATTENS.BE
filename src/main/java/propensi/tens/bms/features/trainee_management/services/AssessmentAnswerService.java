@@ -11,12 +11,8 @@ import java.util.stream.Collectors;
 @Service
 public class AssessmentAnswerService {
 
-    private final AssessmentAnswerRepository answerRepo;
-
     @Autowired
-    public AssessmentAnswerService(AssessmentAnswerRepository answerRepo) {
-        this.answerRepo = answerRepo;
-    }
+    private AssessmentAnswerRepository answerRepo;
 
     public List<AnswerKeyValueDTO> getKeyValueAnswersBySubmissionId(Long submissionId) {
         return answerRepo.findAnswersBySubmissionId(submissionId)

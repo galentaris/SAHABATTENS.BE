@@ -10,16 +10,15 @@ import propensi.tens.bms.features.trainee_management.dto.request.TrainingMateria
 import propensi.tens.bms.features.trainee_management.dto.response.BaseResponseDTO;
 import propensi.tens.bms.features.trainee_management.dto.response.TrainingMaterialResponseDTO;
 import propensi.tens.bms.features.trainee_management.services.TrainingMaterialService;
+import org.springframework.beans.factory.annotation.Autowired;
+
 
 @RestController
 @RequestMapping("/api/training-materials")
 public class TrainingMaterialController {
 
-    private final TrainingMaterialService trainingMaterialService;
-
-    public TrainingMaterialController(TrainingMaterialService trainingMaterialService) {
-        this.trainingMaterialService = trainingMaterialService;
-    }
+    @Autowired
+    private TrainingMaterialService trainingMaterialService;
 
     @PostMapping("/create")
     public ResponseEntity<?> createTrainingMaterial(@RequestBody TrainingMaterialRequestDTO request) {
