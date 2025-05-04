@@ -5,18 +5,16 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import lombok.RequiredArgsConstructor;
 import propensi.tens.bms.features.trainee_management.dto.request.CreatePeerReviewSubmissionRequest;
 import propensi.tens.bms.features.trainee_management.dto.response.*;
 import propensi.tens.bms.features.trainee_management.services.*;
 
 @RestController
 @RequestMapping("/api/peer-review")
-@RequiredArgsConstructor
 public class PeerReviewController {
 
-    private final PeerReviewContentService contentService;
-    private final PeerReviewSubmissionService submissionService;
+    private PeerReviewContentService contentService;
+    private PeerReviewSubmissionService submissionService;
 
     @GetMapping("/questions")
     public ResponseEntity<List<PeerReviewQuestionResponse>> questions() {

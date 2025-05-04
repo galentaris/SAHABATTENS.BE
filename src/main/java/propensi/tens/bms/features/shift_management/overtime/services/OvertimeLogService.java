@@ -1,6 +1,5 @@
 package propensi.tens.bms.features.shift_management.overtime.services;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -21,11 +20,10 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class OvertimeLogService {
 
-    private final OvertimeLogDb overtimeLogDb;
-    private final OutletDb outletDb;
+    private OvertimeLogDb overtimeLogDb;
+    private OutletDb outletDb;
 
     // Get All Overtime Logs with date range filtering
     public List<OvertimeLogResponse> getAllOvertimeLogs(String status, String sort, LocalDate startDate, LocalDate endDate) {
