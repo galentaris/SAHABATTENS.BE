@@ -6,9 +6,6 @@ import propensi.tens.bms.features.shift_management.overtime.dto.request.Overtime
 import propensi.tens.bms.features.shift_management.overtime.dto.response.OvertimeLogResponse;
 import propensi.tens.bms.features.shift_management.overtime.services.OvertimeLogService;
 
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,18 +17,21 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/overtime-logs")
-@RequiredArgsConstructor
 public class OvertimeLogController {
 
-    @Autowired
-    private OvertimeLogService overtimeLogService;
+    private final OvertimeLogService overtimeLogService;
+
+    // Constructor manual sebagai pengganti @RequiredArgsConstructor
+    public OvertimeLogController(OvertimeLogService overtimeLogService) {
+        this.overtimeLogService = overtimeLogService;
+    }
 
     @GetMapping
     public ResponseEntity<List<OvertimeLogResponse>> getAllOvertimeLogs(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String sort,
-            @RequestParam(required = false) LocalDate startDate,  // Added
-            @RequestParam(required = false) LocalDate endDate) {  // Added
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate) {
 
         List<OvertimeLogResponse> logs = overtimeLogService.getAllOvertimeLogs(status, sort, startDate, endDate);
         return ResponseEntity.ok(logs);
@@ -67,20 +67,17 @@ public class OvertimeLogController {
     public ResponseEntity<OvertimeLogResponse> updateOvertimeLogStatus(
             @PathVariable Integer id,
             @Valid @RequestBody OvertimeLogStatusRequest request) {
-        
+
         OvertimeLogResponse updatedLog = overtimeLogService.updateOvertimeLogStatus(id, request);
         return ResponseEntity.ok(updatedLog);
     }
 
-    // Add this endpoint to your OvertimeLogController
     @PutMapping("/{id}/approve")
     public ResponseEntity<OvertimeLogResponse> approveOvertimeLog(
             @PathVariable Integer id,
             @Valid @RequestBody OvertimeLogApprovalRequest request) {
-        
+
         OvertimeLogResponse updatedLog = overtimeLogService.approveOvertimeLog(id, request);
         return ResponseEntity.ok(updatedLog);
     }
-
-    
 }

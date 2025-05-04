@@ -23,14 +23,18 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class OvertimeLogService {
 
-    @Autowired
-    private OvertimeLogDb overtimeLogDb;
+    // @Autowired
+    private final OvertimeLogDb overtimeLogDb;
     
-    @Autowired
-    private OutletDb outletDb;
+    // @Autowired
+    private final OutletDb outletDb;
+
+    public OvertimeLogService(OvertimeLogDb overtimeLogDb, OutletDb outletDb) {
+        this.overtimeLogDb = overtimeLogDb;
+        this.outletDb     = outletDb;
+    }
 
     // Get All Overtime Logs with date range filtering
     public List<OvertimeLogResponse> getAllOvertimeLogs(String status, String sort, LocalDate startDate, LocalDate endDate) {
