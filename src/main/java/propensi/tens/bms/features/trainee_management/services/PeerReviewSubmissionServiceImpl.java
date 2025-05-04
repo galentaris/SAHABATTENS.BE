@@ -4,16 +4,15 @@ import java.util.Date;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import lombok.RequiredArgsConstructor;
 import propensi.tens.bms.features.trainee_management.models.*;
 import propensi.tens.bms.features.trainee_management.repositories.*;
 import propensi.tens.bms.features.trainee_management.dto.request.CreatePeerReviewSubmissionRequest;
 import propensi.tens.bms.features.trainee_management.dto.response.PeerReviewSubmissionResponse;
 
-@Service @RequiredArgsConstructor
+@Service @Transactional
 public class PeerReviewSubmissionServiceImpl implements PeerReviewSubmissionService {
-    private final PeerReviewSubmissionRepository subRepo;
-    private final PeerReviewAssignmentRepository assignRepo; 
+    private PeerReviewSubmissionRepository subRepo;
+    private PeerReviewAssignmentRepository assignRepo; 
 
     @Override
     @Transactional

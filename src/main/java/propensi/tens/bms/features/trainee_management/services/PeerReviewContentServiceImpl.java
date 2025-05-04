@@ -2,13 +2,14 @@ package propensi.tens.bms.features.trainee_management.services;
 
 import java.util.List;
 import org.springframework.stereotype.Service;
-import lombok.RequiredArgsConstructor;
+
+import jakarta.transaction.Transactional;
 import propensi.tens.bms.features.trainee_management.repositories.PeerReviewContentRepository;
 import propensi.tens.bms.features.trainee_management.dto.response.PeerReviewQuestionResponse;
 
-@Service @RequiredArgsConstructor
+@Service @Transactional
 public class PeerReviewContentServiceImpl implements PeerReviewContentService {
-    private final PeerReviewContentRepository repo;
+    private PeerReviewContentRepository repo;
 
     @Override
     public List<PeerReviewQuestionResponse> getAllQuestions() {
