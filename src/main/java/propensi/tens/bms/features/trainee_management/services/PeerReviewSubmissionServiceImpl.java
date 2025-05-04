@@ -13,7 +13,7 @@ import propensi.tens.bms.features.trainee_management.dto.response.PeerReviewSubm
 @Service @RequiredArgsConstructor
 public class PeerReviewSubmissionServiceImpl implements PeerReviewSubmissionService {
     private final PeerReviewSubmissionRepository subRepo;
-    private final PeerReviewAssignmentRepository assignRepo;
+    private final PeerReviewAssignmentRepository assignRepo; 
 
     @Override
     @Transactional
