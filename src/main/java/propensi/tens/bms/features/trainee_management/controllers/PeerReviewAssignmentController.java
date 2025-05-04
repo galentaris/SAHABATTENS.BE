@@ -114,4 +114,25 @@ public class PeerReviewAssignmentController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/by-reviewee/{revieweeUsername}")
+    public ResponseEntity<?> getPeerReviewAssignmentsByReviewee(@PathVariable("revieweeUsername") String revieweeUsername) {
+        BaseResponseDTO<List<PeerReviewAssignmentResponseDTO>> response = new BaseResponseDTO<>();
+        try {
+            List<PeerReviewAssignmentResponseDTO> list = peerReviewAssignmentService.getPeerReviewAssignmentsByReviewee(revieweeUsername);
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Peer review assignments untuk reviewee " + revieweeUsername + " berhasil diambil");
+            response.setTimestamp(new Date());
+            response.setData(list);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            response.setMessage(e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    
 }
