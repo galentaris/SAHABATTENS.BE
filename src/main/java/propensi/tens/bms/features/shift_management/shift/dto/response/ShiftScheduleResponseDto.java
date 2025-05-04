@@ -11,7 +11,6 @@ import lombok.Getter;
 import lombok.Setter;
 import propensi.tens.bms.features.account_management.dto.response.BaristaDropdownResponseDTO;
 
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

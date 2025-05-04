@@ -13,8 +13,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "shift_schedule",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"createdAt", "date_shift", "shift_type", "outlet_id", "head_bar_id"})
-)
+       uniqueConstraints = @UniqueConstraint(columnNames = {"createdAt", "date_shift", "shift_type", "outlet_id", "head_bar_id"}))
 @Getter
 @Setter
 public class ShiftSchedule {
@@ -23,12 +22,12 @@ public class ShiftSchedule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long shiftScheduleId;
 
-    private LocalDateTime createdAt; 
+    private LocalDateTime createdAt;
 
     private Integer shiftType;
 
     @Column(nullable = false)
-    private LocalDate dateShift;  
+    private LocalDate dateShift;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -41,20 +40,17 @@ public class ShiftSchedule {
     @Column(nullable = false)
     private Long outletId;
 
-    
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
     }
 
     @Column(nullable = false)
-    private UUID headBarId;  // UUID FK ke HeadBar
+    private UUID headBarId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "headBarId", referencedColumnName = "id", insertable = false, updatable = false)
     private HeadBar headBar;
 
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
+    private int overtimeHours;
 }
