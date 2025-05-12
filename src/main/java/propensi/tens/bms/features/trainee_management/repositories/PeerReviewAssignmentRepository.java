@@ -18,4 +18,7 @@ public interface PeerReviewAssignmentRepository extends JpaRepository<PeerReview
     
     List<PeerReviewAssignment> findByRevieweeAndReviewedAtIsNull(EndUser reviewee);
     List<PeerReviewAssignment> findByReviewerAndReviewedAtIsNull(EndUser reviewer);
+
+    List<PeerReviewAssignment> findByReviewer(EndUser reviewer);
+    List<PeerReviewAssignment> findByReviewee(EndUser reviewee);
 }

@@ -9,6 +9,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
+
 @Getter
 @Setter
 public class ShiftSummary {
