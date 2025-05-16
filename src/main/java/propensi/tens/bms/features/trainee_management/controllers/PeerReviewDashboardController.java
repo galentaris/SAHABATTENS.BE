@@ -17,7 +17,7 @@ import propensi.tens.bms.features.account_management.dto.response.BaseResponseDT
 import propensi.tens.bms.features.trainee_management.dto.response.*;
 import propensi.tens.bms.features.trainee_management.services.PeerReviewDashboardService;
 
-@CrossOrigin(origins = "http://localhost:3002")
+// @CrossOrigin(origins = "http://localhost:3002")
 @RestController
 @RequestMapping("/api/dashboard/peer-review")
 public class PeerReviewDashboardController {

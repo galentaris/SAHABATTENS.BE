@@ -38,8 +38,9 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/account/change-password").permitAll()
-                        .requestMatchers("/api/baristas/**").permitAll() 
+                        .requestMatchers("/api/baristas/**").permitAll()
                         .requestMatchers("/api/shift/**").permitAll()
+                        .requestMatchers("/api/dashboard/**").permitAll()
                         .requestMatchers("/api/account/create").hasAnyRole("Admin")
                         .requestMatchers("/api/training-materials/create").hasAnyRole("Admin")
                         .anyRequest().authenticated())
@@ -58,7 +59,7 @@ public class WebSecurityConfig {
         return http.build();
     }
 
-     @Bean
+    @Bean
     public BCryptPasswordEncoder encoder() {
         return new BCryptPasswordEncoder();
     }
@@ -71,14 +72,14 @@ public class WebSecurityConfig {
         return provider;
     }
 
-
     @Autowired
     public void configAuthentication(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService).passwordEncoder(encoder());
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 

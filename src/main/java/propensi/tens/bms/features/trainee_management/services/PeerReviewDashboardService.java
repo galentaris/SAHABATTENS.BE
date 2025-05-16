@@ -275,24 +275,22 @@ public class PeerReviewDashboardService {
                 }
             }
             
+            summary.setReviewsCompleted(submissions.size());
+            summary.setReviewsTotal(assignments.size());
+
             if (submissions.isEmpty()) {
-                // Belum ada review
                 summary.setAverageScore(0.0);
-                summary.setReviewsCompleted(0);
-                summary.setReviewsTotal(5); // Asumsi total 5 review per barista
                 summary.setStatus("Pending");
                 summary.setLastReviewDate("");
                 summary.setTrend("stable");
                 summary.setTrendValue(0.0);
             } else {
-                // Hitung rata-rata skor
                 double averageScore = submissions.stream()
-                        .mapToDouble(submission -> calculateAverageScore((PeerReviewSubmission) submission))
-                        .average()
-                        .orElse(0.0);
+                    .mapToDouble(this::calculateAverageScore)
+                    .average()
+                    .orElse(0.0);
                 summary.setAverageScore(averageScore);
-                
-                // Tentukan status berdasarkan skor
+
                 String baristaStatus;
                 if (averageScore < 2.0) {
                     baristaStatus = "Tidak Lulus";
@@ -302,49 +300,76 @@ public class PeerReviewDashboardService {
                     baristaStatus = "Lulus";
                 }
                 summary.setStatus(baristaStatus);
-                
-                // Filter berdasarkan status jika diperlukan
-                if (!"all".equals(status) && !status.isEmpty() && 
-                        !baristaStatus.toLowerCase().equals(status.toLowerCase())) {
+
+                // Filter status jika diperlukan
+                if (!"all".equals(status) && !status.isEmpty() &&
+                    !baristaStatus.toLowerCase().equals(status.toLowerCase())) {
                     continue;
                 }
-                
-                summary.setReviewsCompleted(submissions.size());
-                summary.setReviewsTotal(assignments.size());
-                
-                // Ambil tanggal review terakhir
+
+                // Ambil tanggal review terakhir dan hitung tren
                 PeerReviewSubmission latestSubmission = submissions.stream()
-                        .max(Comparator.comparing(PeerReviewSubmission::getReviewedAt))
-                        .orElse(null);
-                
+                    .max(Comparator.comparing(PeerReviewSubmission::getReviewedAt))
+                    .orElse(null);
+
                 if (latestSubmission != null) {
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                    summary.setLastReviewDate(dateFormat.format(latestSubmission.getReviewedAt()));
-                    
-                    // Hitung tren (perbandingan dengan review sebelumnya)
+                    summary.setLastReviewDate(new SimpleDateFormat("yyyy-MM-dd")
+                        .format(latestSubmission.getReviewedAt()));
+
                     if (submissions.size() > 1) {
-                        List<PeerReviewSubmission> sortedSubmissions = submissions.stream()
-                                .sorted(Comparator.comparing(PeerReviewSubmission::getReviewedAt))
-                                .collect(Collectors.toList());
-                        
-                        PeerReviewSubmission previousSubmission = sortedSubmissions.get(sortedSubmissions.size() - 2);
-                        double previousScore = calculateAverageScore(previousSubmission);
+                        List<PeerReviewSubmission> sorted = submissions.stream()
+                            .sorted(Comparator.comparing(PeerReviewSubmission::getReviewedAt))
+                            .collect(Collectors.toList());
+
+                        PeerReviewSubmission previous = sorted.get(sorted.size() - 2);
+                        double previousScore = calculateAverageScore(previous);
                         double currentScore = calculateAverageScore(latestSubmission);
                         double trendValue = currentScore - previousScore;
-                        
+
                         summary.setTrendValue(trendValue);
-                        if (trendValue > 0) {
-                            summary.setTrend("up");
-                        } else if (trendValue < 0) {
-                            summary.setTrend("down");
-                        } else {
-                            summary.setTrend("stable");
-                        }
+                        if (trendValue > 0) summary.setTrend("up");
+                        else if (trendValue < 0) summary.setTrend("down");
+                        else summary.setTrend("stable");
                     } else {
                         summary.setTrend("stable");
                         summary.setTrendValue(0.0);
                     }
                 }
+            
+    
+                // // Ambil tanggal review terakhir
+                // PeerReviewSubmission latestSubmission = submissions.stream()
+                //         .max(Comparator.comparing(PeerReviewSubmission::getReviewedAt))
+                //         .orElse(null);
+                
+                // if (latestSubmission != null) {
+                //     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                //     summary.setLastReviewDate(dateFormat.format(latestSubmission.getReviewedAt()));
+                    
+                //     // Hitung tren (perbandingan dengan review sebelumnya)
+                //     if (submissions.size() > 1) {
+                //         List<PeerReviewSubmission> sortedSubmissions = submissions.stream()
+                //                 .sorted(Comparator.comparing(PeerReviewSubmission::getReviewedAt))
+                //                 .collect(Collectors.toList());
+                        
+                //         PeerReviewSubmission previousSubmission = sortedSubmissions.get(sortedSubmissions.size() - 2);
+                //         double previousScore = calculateAverageScore(previousSubmission);
+                //         double currentScore = calculateAverageScore(latestSubmission);
+                //         double trendValue = currentScore - previousScore;
+                        
+                //         summary.setTrendValue(trendValue);
+                //         if (trendValue > 0) {
+                //             summary.setTrend("up");
+                //         } else if (trendValue < 0) {
+                //             summary.setTrend("down");
+                //         } else {
+                //             summary.setTrend("stable");
+                //         }
+                //     } else {
+                //         summary.setTrend("stable");
+                //         summary.setTrendValue(0.0);
+                //     }
+                // }
             }
             
             baristaReviewSummaries.add(summary);
