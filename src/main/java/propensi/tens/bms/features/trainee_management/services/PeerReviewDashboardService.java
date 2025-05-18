@@ -112,8 +112,7 @@ public class PeerReviewDashboardService {
         
         // Hitung jumlah review yang selesai dan total
         int completedReviews = submissions.size();
-        int totalReviews = probationBaristas.size() * 5; // Asumsi 5 reviewer per barista
-        
+        int totalReviews = assignmentRepository.findAll().size();         
         summary.setCompletedReviews(completedReviews);
         summary.setTotalReviews(totalReviews);
         
@@ -183,7 +182,10 @@ public class PeerReviewDashboardService {
             summary.setPassRate(passRate);
             
             // Hitung tingkat penyelesaian review
-            int totalExpectedReviews = outletBaristas.size() * 5; // Asumsi 5 reviewer per barista
+            int totalExpectedReviews = 0;
+            for (ProbationBarista barista : outletBaristas) {
+                totalExpectedReviews += assignmentRepository.findByReviewee(barista).size();
+            }            
             double completionRate = totalExpectedReviews > 0 ? 
                     (double) outletSubmissions.size() / totalExpectedReviews * 100 : 0;
             summary.setReviewCompletionRate(completionRate);
