@@ -93,9 +93,15 @@ public class BmsApplication {
             outletDb.save(outlet5);
 
             baristaDb.save(createBarista("skinny.pete", "Skinny Pete", true, "08111111111", outlet1));
+            baristaDb.save(createBarista("badger", "Badger", false, "08222222222", outlet1));
+            baristaDb.save(createBarista("todd.alquist", "Todd Alquist", true, "08333333333", outlet1));
+            baristaDb.save(createBarista("andrea.cantillo", "Andrea Cantillo", false, "08444444444", outlet1));
+            baristaDb.save(createBarista("jesse.pinkman", "Jesse Pinkman", true, "08333333333", outlet3));
             baristaDb.save(createBarista("brandon.mayhew", "Brandon Mayhew", false, "08222222222", outlet2));
             baristaDb.save(createBarista("christian.ortega", "Christian Ortega", true, "08333333333", outlet3));
-
+            baristaDb.save(createBarista("kyle.chandler", "Kyle Chandler", false, "08444444444", outlet4));
+            baristaDb.save(createBarista("jane.doe", "Jane Doe", true, "08555555555", outlet5));
+            baristaDb.save(createBarista("john.doe", "John Doe", false, "08666666666", outlet1));
             cLevelDb.save(createCLevel("gustavo.fring", "Gustavo Fring", true, "08444444444", "CEO"));
             cLevelDb.save(createCLevel("saul.goodman", "Saul Goodman", false, "08555555555", "CMO"));
             cLevelDb.save(createCLevel("mike.ehrmantraut", "Mike Ehrmantraut", true, "08666666666", "CIOO"));
