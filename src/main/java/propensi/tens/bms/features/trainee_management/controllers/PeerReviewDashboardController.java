@@ -31,6 +31,7 @@ public class PeerReviewDashboardController {
         
         BaseResponseDTO<DashboardSummaryDTO> response = new BaseResponseDTO<>();
         try {
+            System.out.println("TimeRange received: " + timeRange);
             DashboardSummaryDTO summary = dashboardService.getDashboardSummary(timeRange);
             response.setStatus(HttpStatus.OK.value());
             response.setMessage("Dashboard summary retrieved successfully");
@@ -48,11 +49,12 @@ public class PeerReviewDashboardController {
 
     @GetMapping("/outlet-performance")
     public ResponseEntity<?> getOutletPerformance(
-            @RequestParam(value = "timeRange", defaultValue = "this-month") String timeRange) {
-        
+        @RequestParam(value = "timeRange", defaultValue = "this-month") String timeRange,
+        @RequestParam(value = "month", required = false) String month) {
+    
         BaseResponseDTO<List<OutletSummaryDTO>> response = new BaseResponseDTO<>();
         try {
-            List<OutletSummaryDTO> outletPerformance = dashboardService.getOutletPerformance(timeRange);
+            List<OutletSummaryDTO> outletPerformance = dashboardService.getOutletPerformance(timeRange, month);
             response.setStatus(HttpStatus.OK.value());
             response.setMessage("Outlet performance retrieved successfully");
             response.setTimestamp(new Date());
@@ -113,13 +115,36 @@ public class PeerReviewDashboardController {
         }
     }
 
+    @GetMapping("/available-years")
+    public ResponseEntity<?> getAvailableReviewYears() {
+        try {
+            List<Integer> years = dashboardService.getAvailablePeerReviewYears();
+            BaseResponseDTO<List<Integer>> response = new BaseResponseDTO<>(
+                HttpStatus.OK.value(),
+                "Tahun tersedia berhasil diambil",
+                new Date(),
+                years
+            );
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            BaseResponseDTO<Object> error = new BaseResponseDTO<>(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                e.getMessage(),
+                new Date(),
+                null
+            );
+            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
     @GetMapping("/score-trend")
     public ResponseEntity<?> getScoreTrend(
-            @RequestParam(value = "months", defaultValue = "6") int months) {
-        
+        @RequestParam(value = "timeRange", defaultValue = "this-month") String timeRange) {
+    
         BaseResponseDTO<List<ScoreTrendDTO>> response = new BaseResponseDTO<>();
         try {
-            List<ScoreTrendDTO> scoreTrend = dashboardService.getScoreTrend(months);
+            List<ScoreTrendDTO> scoreTrend = dashboardService.getScoreTrend(timeRange);
             response.setStatus(HttpStatus.OK.value());
             response.setMessage("Score trend retrieved successfully");
             response.setTimestamp(new Date());

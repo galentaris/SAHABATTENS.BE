@@ -94,9 +94,9 @@ public class BmsApplication {
 
             baristaDb.save(createBarista("skinny.pete", "Skinny Pete", true, "08111111111", outlet1));
             baristaDb.save(createBarista("badger", "Badger", false, "08222222222", outlet1));
-            baristaDb.save(createBarista("todd.alquist", "Todd Alquist", true, "08333333333", outlet1));
-            baristaDb.save(createBarista("andrea.cantillo", "Andrea Cantillo", false, "08444444444", outlet1));
-            baristaDb.save(createBarista("jesse.pinkman", "Jesse Pinkman", true, "08333333333", outlet3));
+            // baristaDb.save(createBarista("todd.alquist", "Todd Alquist", true, "08333333333", outlet1));
+            // baristaDb.save(createBarista("andrea.cantillo", "Andrea Cantillo", false, "08444444444", outlet1));
+            // baristaDb.save(createBarista("jesse.pinkman", "Jesse Pinkman", true, "08333333333", outlet3));
             baristaDb.save(createBarista("brandon.mayhew", "Brandon Mayhew", false, "08222222222", outlet2));
             baristaDb.save(createBarista("christian.ortega", "Christian Ortega", true, "08333333333", outlet3));
             baristaDb.save(createBarista("kyle.chandler", "Kyle Chandler", false, "08444444444", outlet4));

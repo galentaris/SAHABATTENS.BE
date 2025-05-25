@@ -21,4 +21,6 @@ public class AdminDashboardFilterRequestDTO {
     private Long outletId;
     
     private String baristaName;
+
+    private String timeRange;
 }

@@ -52,25 +52,39 @@ public class PeerReviewDashboardService {
     private OutletDb outletDb;
     
     // Mendapatkan ringkasan dashboard
+
     public DashboardSummaryDTO getDashboardSummary(String timeRange) {
         Date[] dateRange = getDateRangeFromTimeRange(timeRange);
         Date startDate = dateRange[0];
         Date endDate = dateRange[1];
         
+        System.out.println("Filtering assignments with endDateFill between: " + startDate + " and " + endDate);
+        
+        // PERBAIKAN: Filter assignment berdasarkan endDateFill terlebih dahulu
+        List<PeerReviewAssignment> filteredAssignments = assignmentRepository.findByEndDateFillBetween(startDate, endDate);
+        
+        // Kemudian ambil submission yang terkait dengan assignment yang sudah difilter
+        List<PeerReviewSubmission> submissions = new ArrayList<>();
+        for (PeerReviewAssignment assignment : filteredAssignments) {
+            PeerReviewSubmission submission = submissionRepository.findByAssignment(assignment);
+            if (submission != null) {
+                submissions.add(submission);
+            }
+        }
+        
+        System.out.println("Found " + filteredAssignments.size() + " assignments and " + submissions.size() + " submissions");
+        
         DashboardSummaryDTO summary = new DashboardSummaryDTO();
         
-        // Hitung total barista probation
+        // Hitung total barista probation (tetap sama)
         List<ProbationBarista> probationBaristas = probationBaristaDb.findAll();
         summary.setTotalBaristas(probationBaristas.size());
         
-        // Ambil semua submission dalam range waktu
-        List<PeerReviewSubmission> submissions = submissionRepository.findByReviewedAtBetween(startDate, endDate);
-        
-        // Hitung rata-rata skor
+        // Hitung rata-rata skor dari submission yang sudah difilter
         double averageScore = 0.0;
         if (!submissions.isEmpty()) {
             averageScore = submissions.stream()
-                    .mapToDouble(submission -> calculateAverageScore((PeerReviewSubmission) submission))
+                    .mapToDouble(this::calculateAverageScore)
                     .average()
                     .orElse(0.0);
         }
@@ -78,13 +92,21 @@ public class PeerReviewDashboardService {
         
         // Hitung tren skor (dibandingkan dengan periode sebelumnya)
         Date[] previousDateRange = getPreviousDateRange(startDate, endDate);
-        List<PeerReviewSubmission> previousSubmissions = submissionRepository.findByReviewedAtBetween(
+        List<PeerReviewAssignment> previousAssignments = assignmentRepository.findByEndDateFillBetween(
                 previousDateRange[0], previousDateRange[1]);
+        
+        List<PeerReviewSubmission> previousSubmissions = new ArrayList<>();
+        for (PeerReviewAssignment assignment : previousAssignments) {
+            PeerReviewSubmission submission = submissionRepository.findByAssignment(assignment);
+            if (submission != null) {
+                previousSubmissions.add(submission);
+            }
+        }
         
         double previousAverageScore = 0.0;
         if (!previousSubmissions.isEmpty()) {
             previousAverageScore = previousSubmissions.stream()
-                    .mapToDouble(submission -> calculateAverageScore((PeerReviewSubmission) submission))
+                    .mapToDouble(this::calculateAverageScore)
                     .average()
                     .orElse(0.0);
         }
@@ -97,7 +119,7 @@ public class PeerReviewDashboardService {
         int passCount = 0;
         for (Map.Entry<String, List<PeerReviewSubmission>> entry : submissionsByReviewee.entrySet()) {
             double baristaAvgScore = entry.getValue().stream()
-                    .mapToDouble(submission -> calculateAverageScore((PeerReviewSubmission) submission))
+                    .mapToDouble(this::calculateAverageScore)
                     .average()
                     .orElse(0.0);
             
@@ -110,22 +132,101 @@ public class PeerReviewDashboardService {
                 (double) passCount / submissionsByReviewee.size() * 100 : 0;
         summary.setPassRate(passRate);
         
-        // Hitung jumlah review yang selesai dan total
+        // Hitung jumlah review yang selesai dan total dari assignment yang difilter
         int completedReviews = submissions.size();
-        int totalReviews = assignmentRepository.findAll().size();         
+        int totalReviews = filteredAssignments.size();         
         summary.setCompletedReviews(completedReviews);
         summary.setTotalReviews(totalReviews);
         
         return summary;
     }
+    // public DashboardSummaryDTO getDashboardSummary(String timeRange) {
+    //     Date[] dateRange = getDateRangeFromTimeRange(timeRange);
+    //     Date startDate = dateRange[0];
+    //     Date endDate = dateRange[1];
+        
+    //     DashboardSummaryDTO summary = new DashboardSummaryDTO();
+        
+    //     // Hitung total barista probation
+    //     List<ProbationBarista> probationBaristas = probationBaristaDb.findAll();
+    //     summary.setTotalBaristas(probationBaristas.size());
+        
+    //     // Ambil semua submission dalam range waktu
+    //     List<PeerReviewSubmission> submissions = submissionRepository.findByReviewedAtBetween(startDate, endDate);
+        
+    //     // Hitung rata-rata skor
+    //     double averageScore = 0.0;
+    //     if (!submissions.isEmpty()) {
+    //         averageScore = submissions.stream()
+    //                 .mapToDouble(submission -> calculateAverageScore((PeerReviewSubmission) submission))
+    //                 .average()
+    //                 .orElse(0.0);
+    //     }
+    //     summary.setAverageScore(averageScore);
+        
+    //     // Hitung tren skor (dibandingkan dengan periode sebelumnya)
+    //     Date[] previousDateRange = getPreviousDateRange(startDate, endDate);
+    //     List<PeerReviewSubmission> previousSubmissions = submissionRepository.findByReviewedAtBetween(
+    //             previousDateRange[0], previousDateRange[1]);
+        
+    //     double previousAverageScore = 0.0;
+    //     if (!previousSubmissions.isEmpty()) {
+    //         previousAverageScore = previousSubmissions.stream()
+    //                 .mapToDouble(submission -> calculateAverageScore((PeerReviewSubmission) submission))
+    //                 .average()
+    //                 .orElse(0.0);
+    //     }
+        
+    //     summary.setScoreTrend(averageScore - previousAverageScore);
+        
+    //     // Hitung tingkat kelulusan
+    //     Map<String, List<PeerReviewSubmission>> submissionsByReviewee = groupSubmissionsByReviewee(submissions);
+        
+    //     int passCount = 0;
+    //     for (Map.Entry<String, List<PeerReviewSubmission>> entry : submissionsByReviewee.entrySet()) {
+    //         double baristaAvgScore = entry.getValue().stream()
+    //                 .mapToDouble(submission -> calculateAverageScore((PeerReviewSubmission) submission))
+    //                 .average()
+    //                 .orElse(0.0);
+            
+    //         if (baristaAvgScore >= 3.5) {
+    //             passCount++;
+    //         }
+    //     }
+        
+    //     double passRate = submissionsByReviewee.size() > 0 ? 
+    //             (double) passCount / submissionsByReviewee.size() * 100 : 0;
+    //     summary.setPassRate(passRate);
+        
+    //     // Hitung jumlah review yang selesai dan total
+    //     int completedReviews = submissions.size();
+    //     int totalReviews = assignmentRepository.findAll().size();         
+    //     summary.setCompletedReviews(completedReviews);
+    //     summary.setTotalReviews(totalReviews);
+        
+    //     return summary;
+    // }
     
     // Mendapatkan performa outlet
-    public List<OutletSummaryDTO> getOutletPerformance(String timeRange) {
-        Date[] dateRange = getDateRangeFromTimeRange(timeRange);
+    public List<OutletSummaryDTO> getOutletPerformance(String timeRange, String month) {
+        Date[] dateRange;
+        
+        if (month != null && !month.isEmpty() && timeRange.matches("\\d{4}")) {
+            // Filter berdasarkan bulan spesifik dalam tahun
+            dateRange = getDateRangeFromYearAndMonth(timeRange, month);
+        } else {
+            // Filter berdasarkan timeRange saja
+            dateRange = getDateRangeFromTimeRange(timeRange);
+        }
+        
         Date startDate = dateRange[0];
         Date endDate = dateRange[1];
         
-        // Ambil semua outlet
+        System.out.println("Filtering outlet performance from " + startDate + " to " + endDate);
+        
+        // Filter assignment berdasarkan endDateFill
+        List<PeerReviewAssignment> filteredAssignments = assignmentRepository.findByEndDateFillBetween(startDate, endDate);
+        
         List<Outlet> outlets = outletDb.findAll();
         List<OutletSummaryDTO> outletSummaries = new ArrayList<>();
         
@@ -139,14 +240,12 @@ public class PeerReviewDashboardService {
             List<ProbationBarista> outletBaristas = probationBaristaDb.findByOutlet_OutletId(outlet.getOutletId());
             summary.setBaristaCount(outletBaristas.size());
             
-            // Ambil semua submission untuk barista di outlet ini
+            // Ambil assignment yang difilter untuk barista di outlet ini
             List<PeerReviewSubmission> outletSubmissions = new ArrayList<>();
-            for (ProbationBarista barista : outletBaristas) {
-                List<PeerReviewAssignment> assignments = assignmentRepository.findByReviewee(barista);
-                for (PeerReviewAssignment assignment : assignments) {
+            for (PeerReviewAssignment assignment : filteredAssignments) {
+                if (outletBaristas.contains(assignment.getReviewee())) {
                     PeerReviewSubmission submission = submissionRepository.findByAssignment(assignment);
-                    if (submission != null && submission.getReviewedAt().after(startDate) && 
-                            submission.getReviewedAt().before(endDate)) {
+                    if (submission != null) {
                         outletSubmissions.add(submission);
                     }
                 }
@@ -156,7 +255,7 @@ public class PeerReviewDashboardService {
             double averageScore = 0.0;
             if (!outletSubmissions.isEmpty()) {
                 averageScore = outletSubmissions.stream()
-                        .mapToDouble(submission -> calculateAverageScore((PeerReviewSubmission) submission))
+                        .mapToDouble(this::calculateAverageScore)
                         .average()
                         .orElse(0.0);
             }
@@ -168,7 +267,7 @@ public class PeerReviewDashboardService {
             int passCount = 0;
             for (Map.Entry<String, List<PeerReviewSubmission>> entry : submissionsByReviewee.entrySet()) {
                 double baristaAvgScore = entry.getValue().stream()
-                        .mapToDouble(submission -> calculateAverageScore((PeerReviewSubmission) submission))
+                        .mapToDouble(this::calculateAverageScore)
                         .average()
                         .orElse(0.0);
                 
@@ -181,11 +280,14 @@ public class PeerReviewDashboardService {
                     (double) passCount / submissionsByReviewee.size() * 100 : 0;
             summary.setPassRate(passRate);
             
-            // Hitung tingkat penyelesaian review
+            // Hitung tingkat penyelesaian review berdasarkan assignment yang difilter
             int totalExpectedReviews = 0;
-            for (ProbationBarista barista : outletBaristas) {
-                totalExpectedReviews += assignmentRepository.findByReviewee(barista).size();
-            }            
+            for (PeerReviewAssignment assignment : filteredAssignments) {
+                if (outletBaristas.contains(assignment.getReviewee())) {
+                    totalExpectedReviews++;
+                }
+            }
+            
             double completionRate = totalExpectedReviews > 0 ? 
                     (double) outletSubmissions.size() / totalExpectedReviews * 100 : 0;
             summary.setReviewCompletionRate(completionRate);
@@ -195,16 +297,119 @@ public class PeerReviewDashboardService {
         
         return outletSummaries;
     }
+
+    private Date[] getDateRangeFromYearAndMonth(String year, String month) {
+        int yearInt = Integer.parseInt(year);
+        int monthInt = Integer.parseInt(month) - 1; // Calendar month is 0-based
+        
+        Calendar startCal = Calendar.getInstance();
+        startCal.set(yearInt, monthInt, 1, 0, 0, 0);
+        startCal.set(Calendar.MILLISECOND, 0);
+        Date startDate = startCal.getTime();
+        
+        Calendar endCal = Calendar.getInstance();
+        endCal.set(yearInt, monthInt, startCal.getActualMaximum(Calendar.DAY_OF_MONTH), 23, 59, 59);
+        endCal.set(Calendar.MILLISECOND, 999);
+        Date endDate = endCal.getTime();
+        
+        return new Date[] { startDate, endDate };
+    }
+    // public List<OutletSummaryDTO> getOutletPerformance(String timeRange) {
+    //     Date[] dateRange = getDateRangeFromTimeRange(timeRange);
+    //     Date startDate = dateRange[0];
+    //     Date endDate = dateRange[1];
+        
+    //     // Ambil semua outlet
+    //     List<Outlet> outlets = outletDb.findAll();
+    //     List<OutletSummaryDTO> outletSummaries = new ArrayList<>();
+        
+    //     for (Outlet outlet : outlets) {
+    //         if (outlet == null || outlet.getName() == null || outlet.getName().isEmpty()) continue;
+            
+    //         OutletSummaryDTO summary = new OutletSummaryDTO();
+    //         summary.setName(outlet.getName());
+            
+    //         // Hitung jumlah barista di outlet
+    //         List<ProbationBarista> outletBaristas = probationBaristaDb.findByOutlet_OutletId(outlet.getOutletId());
+    //         summary.setBaristaCount(outletBaristas.size());
+            
+    //         // Ambil semua submission untuk barista di outlet ini
+    //         List<PeerReviewSubmission> outletSubmissions = new ArrayList<>();
+    //         for (ProbationBarista barista : outletBaristas) {
+    //             List<PeerReviewAssignment> assignments = assignmentRepository.findByReviewee(barista);
+    //             for (PeerReviewAssignment assignment : assignments) {
+    //                 PeerReviewSubmission submission = submissionRepository.findByAssignment(assignment);
+    //                 if (submission != null && submission.getReviewedAt().after(startDate) && 
+    //                         submission.getReviewedAt().before(endDate)) {
+    //                     outletSubmissions.add(submission);
+    //                 }
+    //             }
+    //         }
+            
+    //         // Hitung rata-rata skor
+    //         double averageScore = 0.0;
+    //         if (!outletSubmissions.isEmpty()) {
+    //             averageScore = outletSubmissions.stream()
+    //                     .mapToDouble(submission -> calculateAverageScore((PeerReviewSubmission) submission))
+    //                     .average()
+    //                     .orElse(0.0);
+    //         }
+    //         summary.setAverageScore(averageScore);
+            
+    //         // Hitung tingkat kelulusan
+    //         Map<String, List<PeerReviewSubmission>> submissionsByReviewee = groupSubmissionsByReviewee(outletSubmissions);
+            
+    //         int passCount = 0;
+    //         for (Map.Entry<String, List<PeerReviewSubmission>> entry : submissionsByReviewee.entrySet()) {
+    //             double baristaAvgScore = entry.getValue().stream()
+    //                     .mapToDouble(submission -> calculateAverageScore((PeerReviewSubmission) submission))
+    //                     .average()
+    //                     .orElse(0.0);
+                
+    //             if (baristaAvgScore >= 3.5) {
+    //                 passCount++;
+    //             }
+    //         }
+            
+    //         double passRate = submissionsByReviewee.size() > 0 ? 
+    //                 (double) passCount / submissionsByReviewee.size() * 100 : 0;
+    //         summary.setPassRate(passRate);
+            
+    //         // Hitung tingkat penyelesaian review
+    //         int totalExpectedReviews = 0;
+    //         for (ProbationBarista barista : outletBaristas) {
+    //             totalExpectedReviews += assignmentRepository.findByReviewee(barista).size();
+    //         }            
+    //         double completionRate = totalExpectedReviews > 0 ? 
+    //                 (double) outletSubmissions.size() / totalExpectedReviews * 100 : 0;
+    //         summary.setReviewCompletionRate(completionRate);
+            
+    //         outletSummaries.add(summary);
+    //     }
+        
+    //     return outletSummaries;
+    // }
     
     // Mendapatkan performa kategori
+
     public List<QuestionSummaryDTO> getCategoryPerformance(String timeRange) {
         Date[] dateRange = getDateRangeFromTimeRange(timeRange);
         Date startDate = dateRange[0];
         Date endDate = dateRange[1];
         
-        List<PeerReviewContent> questions = contentRepository.findAll();
-        List<PeerReviewSubmission> submissions = submissionRepository.findByReviewedAtBetween(startDate, endDate);
+        // Filter assignment berdasarkan endDateFill
+        List<PeerReviewAssignment> filteredAssignments = assignmentRepository.findByEndDateFillBetween(startDate, endDate);
         
+        // Ambil submission dari assignment yang difilter
+        List<PeerReviewSubmission> submissions = new ArrayList<>();
+        for (PeerReviewAssignment assignment : filteredAssignments) {
+            PeerReviewSubmission submission = submissionRepository.findByAssignment(assignment);
+            if (submission != null) {
+                submissions.add(submission);
+            }
+        }
+        
+        List<PeerReviewContent> questions = contentRepository.findAll();
         List<QuestionSummaryDTO> questionSummaries = new ArrayList<>();
         
         for (PeerReviewContent question : questions) {
@@ -220,6 +425,44 @@ public class PeerReviewDashboardService {
         }
         
         return questionSummaries;
+    }
+    // public List<QuestionSummaryDTO> getCategoryPerformance(String timeRange) {
+    //     Date[] dateRange = getDateRangeFromTimeRange(timeRange);
+    //     Date startDate = dateRange[0];
+    //     Date endDate = dateRange[1];
+        
+    //     List<PeerReviewContent> questions = contentRepository.findAll();
+    //     List<PeerReviewSubmission> submissions = submissionRepository.findByReviewedAtBetween(startDate, endDate);
+        
+    //     List<QuestionSummaryDTO> questionSummaries = new ArrayList<>();
+        
+    //     for (PeerReviewContent question : questions) {
+    //         QuestionSummaryDTO summary = new QuestionSummaryDTO();
+    //         summary.setQuestionNumber(question.getQuestionNumber());
+    //         summary.setText(question.getText());
+            
+    //         // Hitung rata-rata skor untuk pertanyaan ini
+    //         double averageScore = calculateAverageScoreForQuestion(submissions, question.getQuestionNumber());
+    //         summary.setAverageScore(averageScore);
+            
+    //         questionSummaries.add(summary);
+    //     }
+        
+    //     return questionSummaries;
+    // }
+    public List<Integer> getAvailablePeerReviewYears() {
+        List<PeerReviewAssignment> assignments = assignmentRepository.findAll();
+    
+        return assignments.stream()
+            .map(a -> {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(a.getEndDateFill());
+                return cal.get(Calendar.YEAR);
+            })
+            .filter(Objects::nonNull)
+            .distinct()
+            .sorted()
+            .collect(Collectors.toList());
     }
     
     // Mendapatkan daftar barista dengan filter
@@ -399,45 +642,61 @@ public class PeerReviewDashboardService {
     }
     
     // Mendapatkan tren skor
-    public List<ScoreTrendDTO> getScoreTrend(int months) {
+    public List<ScoreTrendDTO> getScoreTrend(String timeRange) {
         List<ScoreTrendDTO> trendData = new ArrayList<>();
         
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat monthFormatter = new SimpleDateFormat("MMM");
+        // Parse tahun dari timeRange
+        int year;
+        if (timeRange.matches("\\d{4}")) {
+            year = Integer.parseInt(timeRange);
+        } else {
+            year = Calendar.getInstance().get(Calendar.YEAR); // Default tahun sekarang
+        }
         
-        for (int i = months - 1; i >= 0; i--) {
-            Calendar monthCalendar = (Calendar) calendar.clone();
-            monthCalendar.add(Calendar.MONTH, -i);
+        System.out.println("Getting score trend for year: " + year);
+        
+        String[] monthNames = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+        
+        // Loop untuk setiap bulan dalam tahun yang dipilih
+        for (int month = 0; month < 12; month++) {
+            Calendar startCal = Calendar.getInstance();
+            startCal.set(year, month, 1, 0, 0, 0);
+            startCal.set(Calendar.MILLISECOND, 0);
+            Date startOfMonth = startCal.getTime();
             
-            // Set to first day of month
-            monthCalendar.set(Calendar.DAY_OF_MONTH, 1);
-            monthCalendar.set(Calendar.HOUR_OF_DAY, 0);
-            monthCalendar.set(Calendar.MINUTE, 0);
-            monthCalendar.set(Calendar.SECOND, 0);
-            Date startOfMonth = monthCalendar.getTime();
+            Calendar endCal = Calendar.getInstance();
+            endCal.set(year, month, startCal.getActualMaximum(Calendar.DAY_OF_MONTH), 23, 59, 59);
+            endCal.set(Calendar.MILLISECOND, 999);
+            Date endOfMonth = endCal.getTime();
             
-            // Set to last day of month
-            monthCalendar.set(Calendar.DAY_OF_MONTH, monthCalendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-            monthCalendar.set(Calendar.HOUR_OF_DAY, 23);
-            monthCalendar.set(Calendar.MINUTE, 59);
-            monthCalendar.set(Calendar.SECOND, 59);
-            Date endOfMonth = monthCalendar.getTime();
+            // Filter assignment berdasarkan endDateFill dalam bulan tersebut
+            List<PeerReviewAssignment> monthAssignments = assignmentRepository.findByEndDateFillBetween(startOfMonth, endOfMonth);
             
-            List<PeerReviewSubmission> monthSubmissions = submissionRepository.findByReviewedAtBetween(startOfMonth, endOfMonth);
+            // Ambil submission dari assignment yang difilter
+            List<PeerReviewSubmission> monthSubmissions = new ArrayList<>();
+            for (PeerReviewAssignment assignment : monthAssignments) {
+                PeerReviewSubmission submission = submissionRepository.findByAssignment(assignment);
+                if (submission != null) {
+                    monthSubmissions.add(submission);
+                }
+            }
             
             double averageScore = 0.0;
             if (!monthSubmissions.isEmpty()) {
                 averageScore = monthSubmissions.stream()
-                        .mapToDouble(submission -> calculateAverageScore((PeerReviewSubmission) submission))
+                        .mapToDouble(this::calculateAverageScore)
                         .average()
                         .orElse(0.0);
             }
             
             ScoreTrendDTO monthData = new ScoreTrendDTO();
-            monthData.setMonth(monthFormatter.format(monthCalendar.getTime()));
+            monthData.setMonth(monthNames[month]);
             monthData.setScore(averageScore);
             
             trendData.add(monthData);
+            
+            System.out.println("Month " + monthNames[month] + ": " + monthAssignments.size() + " assignments, " + monthSubmissions.size() + " submissions, avg score: " + averageScore);
         }
         
         return trendData;
@@ -637,7 +896,22 @@ public class PeerReviewDashboardService {
         Calendar calendar = Calendar.getInstance();
         Date endDate = calendar.getTime();
         Date startDate;
-        
+        if (timeRange.matches("\\d{4}")) {
+            int year = Integer.parseInt(timeRange);
+            
+            // Set start date ke 1 Januari tahun tersebut
+            calendar.set(year, Calendar.JANUARY, 1, 0, 0, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
+            startDate = calendar.getTime();
+            
+            // Set end date ke 31 Desember tahun tersebut
+            calendar.set(year, Calendar.DECEMBER, 31, 23, 59, 59);
+            calendar.set(Calendar.MILLISECOND, 999);
+            endDate = calendar.getTime();
+            
+            return new Date[] { startDate, endDate };
+        }
+
         switch (timeRange) {
             case "this-month":
                 calendar.set(Calendar.DAY_OF_MONTH, 1);
